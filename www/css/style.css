@@ -4,5 +4,10 @@ html, body {
     padding: 0;
 }
 #map {
-    height: 90%;
+    margin-top: 20px;
+    height: 85%;
+}
+
+nav{
+height: 20px;
 }

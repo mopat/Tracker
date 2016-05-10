@@ -8,12 +8,28 @@ function init() {
         long = null;
     var track = [];
     var map = null;
+    var locationRefresh = null;
+    var emulate = true;
 
     function onDeviceReady() {
+        var startTra = document.getElementById("startTracking"),
+         stopTra= document.getElementById("stopTracking");
+        startTra.addEventListener("click", function () {
+        startTracking();
+        });
+        stopTra.addEventListener("click", function () {
+            pauseTracking();
+        });
+        var debug = document.getElementById("debug");
+        var distance = document.getElementById("distance");
 
-        cordova.plugins.backgroundMode.enable();
+        var resetButton = document.getElementById("resetButton");
+        resetButton.addEventListener("click", function () {
+            track = [];
+            distance.innerHTML = "0";
+        });
 
-        navigator.geolocation.getCurrentPosition(function (position) {
+       navigator.geolocation.getCurrentPosition(function (position) {
             lat = position.coords.latitude;
             long = position.coords.longitude;
             track.push({lat: Number(lat), lng: Number(long)});
@@ -21,6 +37,7 @@ function init() {
             console.log(lat, long)
             initMap();
         });
+
     }
 
     function initMap() {
@@ -30,21 +47,37 @@ function init() {
             mapTypeId: google.maps.MapTypeId.TERRAIN,
             enableHighAccuracy: true
         });
-        appendLocation();
-        setTrack();
+        //startTracking();
     }
 
+    function startTracking() {
+        cordova.plugins.backgroundMode.enable();
+        appendLocation();
+    }
+
+    function pauseTracking() {
+        cordova.plugins.backgroundMode.disable();
+        clearInterval(locationRefresh);
+        locationRefresh = null;
+    }
 
     function appendLocation() {
-        setInterval(function () {
+        locationRefresh = setInterval(function () {
             navigator.geolocation.getCurrentPosition(function (position) {
                 // var lat = position.coords.latitude;
                 //var long = position.coords.longitude;
-                lat = lat + 0.00001;
-                long = long + 0.00001;
+                if(document.getElementById("emulate").checked){
+                    lat = lat + 0.00001;
+                    long = long + 0.00001;
+                }
+                else{
+                   lat = position.coords.latitude;
+                    long = position.coords.longitude;
+                }
+
                 //alert("lat: " + position.coords.latitude + ", long:" + position.coords.longitude);
                 console.log(lat, long)
-                var debug = document.getElementById("debug");
+
                 debug.innerHTML = lat + " " + long;
                 track.push({lat: Number(lat), lng: Number(long)});
                 setTrack();
@@ -61,7 +94,7 @@ function init() {
             strokeWeight: 2
         });
         var polyLengthInMeters = google.maps.geometry.spherical.computeLength(flightPath.getPath().getArray());
-        var distance = document.getElementById("distance");
+
         distance.innerHTML = polyLengthInMeters;
         flightPath.setMap(map);
     }
