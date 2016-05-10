@@ -13,9 +13,9 @@ function init() {
 
     function onDeviceReady() {
         var startTra = document.getElementById("startTracking"),
-         stopTra= document.getElementById("stopTracking");
+            stopTra = document.getElementById("stopTracking");
         startTra.addEventListener("click", function () {
-        startTracking();
+            startTracking();
         });
         stopTra.addEventListener("click", function () {
             pauseTracking();
@@ -29,7 +29,7 @@ function init() {
             distance.innerHTML = "0";
         });
 
-       navigator.geolocation.getCurrentPosition(function (position) {
+        navigator.geolocation.getCurrentPosition(function (position) {
             lat = position.coords.latitude;
             long = position.coords.longitude;
             track.push({lat: Number(lat), lng: Number(long)});
@@ -51,12 +51,15 @@ function init() {
     }
 
     function startTracking() {
-        cordova.plugins.backgroundMode.enable();
+        window.cordova.plugins.backgroundMode.setDefaults({
+            title: "Tracking running"
+        });
+        window.cordova.plugins.backgroundMode.enable();
         appendLocation();
     }
 
     function pauseTracking() {
-        cordova.plugins.backgroundMode.disable();
+        window.cordova.plugins.backgroundMode.disable();
         clearInterval(locationRefresh);
         locationRefresh = null;
     }
@@ -66,12 +69,12 @@ function init() {
             navigator.geolocation.getCurrentPosition(function (position) {
                 // var lat = position.coords.latitude;
                 //var long = position.coords.longitude;
-                if(document.getElementById("emulate").checked){
-                    lat = lat + 0.00001;
-                    long = long + 0.00001;
+                if (document.getElementById("emulate").checked) {
+                    lat = lat + 0.00002;
+                    long = long + 0.00002;
                 }
-                else{
-                   lat = position.coords.latitude;
+                else {
+                    lat = position.coords.latitude;
                     long = position.coords.longitude;
                 }
 
@@ -82,7 +85,7 @@ function init() {
                 track.push({lat: Number(lat), lng: Number(long)});
                 setTrack();
             });
-        }, 3000);
+        }, 2000);
     }
 
     function setTrack() {
@@ -94,8 +97,12 @@ function init() {
             strokeWeight: 2
         });
         var polyLengthInMeters = google.maps.geometry.spherical.computeLength(flightPath.getPath().getArray());
-
+        console.log(polyLengthInMeters)
         distance.innerHTML = polyLengthInMeters;
+        window.cordova.plugins.backgroundMode.configure({
+            title: "Tracking running",
+            text: "Distance: " + Math.round(polyLengthInMeters) + " metres"
+        });
         flightPath.setMap(map);
     }
 }
